@@ -1,0 +1,48 @@
+---
+title: "Palmer Penguins"
+author: "Cobblepot Analytics"
+format: dashboard
+---
+
+# Crashes year-to-date 
+
+To track progress in real time, it is useful to compare how the number of crashes in the current year compare with the same period in previous years.
+
+## All fatalities and serious injuries {.fill}
+test
+```{R}
+
+```
+
+
+## Bike crashes {.tabset}
+
+```{R}
+#| title: Ped crashes
+print("test")
+```
+
+```{R}
+#| title: Bike crashes
+print("test")
+```
+
+## Row
+```{r}
+#| content: valuebox
+#| title: "Spam per day"
+list(
+  icon = "trash",
+  color = "danger",
+  value = 10
+)
+```
+# Bike crashes
+
+# Ped crashes
+
+# Impairment
+
+# All crashes
+
+# Data notes/FAQ
