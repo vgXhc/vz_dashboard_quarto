@@ -4,9 +4,187 @@ author: "Cobblepot Analytics"
 format: dashboard
 ---
 
+```{R load-libraries}
+library(pins)
+library(tidyverse)
+library(gghighlight)
+library(toOrdinal)
+library(tmap)
+library(sf)
+# library(DT)
+```
+```{R process-data}
+theme_set(theme_minimal())
+board <- pins::board_s3("vzpins", 
+               access_key = Sys.getenv("VZPINS_S3_PUBLIC"), 
+               secret_access_key = Sys.getenv("VZPINS_S3_SECRET"),
+               region = "us-east-1")
+
+
+crashes_all_dane <- pin_read(board = board, name = "crashes_all_dane")
+crashes_all_msn <- crashes_all_dane |> 
+  filter(muniname == "MADISON")
+
+
+
+# Madison city limits
+# downloaded from OpenData portal https://data-cityofmadison.opendata.arcgis.com/datasets/cityofmadison::city-limit/about
+madison <- st_read("data/City_Limit.geojson") %>% 
+  st_make_valid()
+
+
+# set up time intervals
+d <- today()
+
+# last year YTD for comparison
+last_year_YTD <- interval(start = floor_date(today() - years(1), unit = "year"),
+                          end = today() - years(1))
+
+
+
+
+# data frame for map that keeps geography
+crashes_KA_map <- crashes_all_msn %>% 
+  filter(injsvr %in% c("A", "K")) %>% 
+  mutate(location = paste0(stringr::str_to_title(onrdwy), " at ", stringr::str_to_title(atrdwy)))
+
+
+# historic numbers
+crashes_KA_hist <- crashes_all_msn %>%
+  st_drop_geometry |> 
+  filter(injsvr %in% c("A", "K")) |> 
+  mutate(totfatl = as.numeric(totfatl),
+         totinj = as.numeric(totinj),
+         month = month(date, label = T))
+
+# data frame for current year
+crashes <- crashes_KA_hist |> 
+  filter(year == year(today()))
+
+
+
+crashes_last_year_YTD <- crashes_KA_hist %>% 
+  filter(date %within% last_year_YTD)
+
+last_month <- month(floor_date(d, unit = "month") -1, label = T, abbr = T)
+last_month_long <- month(floor_date(d, unit = "month") -1, label = T, abbr = F)
+
+crashes_hist_by_mo <-  crashes_KA_hist %>% 
+  group_by(year, month) %>% 
+  summarize(tot_fat_mo = sum(totfatl), 
+            tot_inj_mo = sum(totinj), 
+            tot_fat_inj_mo = tot_fat_mo + tot_inj_mo
+  ) %>% 
+  group_by(month) %>% 
+  summarise(year, tot_fat_inj_mo, max_fat_inj_mo = max(tot_fat_inj_mo))
+
+ranked <- crashes_hist_by_mo %>% 
+  filter(month == last_month) %>% 
+  pull(tot_fat_inj_mo)
+crashes_last_mo <- tail(ranked, 1)
+rank_mo <- tail(rank(-round(ranked), ties.method = "first"), n = 1)
+
+# if (rank_mo == 1){
+#   rank_mo_str <- "highest"
+# } else if (rank_mo == length(ranked)) {
+#   rank_mo_str <- "lowest"
+# } else{
+#   rank_mo_str <- paste0(toOrdinal(rank_mo), " highest")
+# }
+title_month <- paste0("Fatal and serious traffic injuries in Madison in ", last_month_long, ", 2017-2022")
+
+# function that returns the number of crashes by mode (flag) and type (serious/fatal)
+# setting flag to "all" returns all crashes
+sumCrashes <- function(df, flag, type){
+  if(flag == "all")
+     {
+          df %>% 
+            summarise(sum(eval(parse(text = type)))) %>% 
+            pull()
+
+  } else
+          df %>% 
+            filter(eval(parse(text = flag)) == "Y") %>% 
+            summarise(sum(eval(parse(text = type)))) %>% 
+            pull()
+  
+}
+
+
+bike_fat <- sumCrashes(crashes, "bikeflag", "totfatl")
+ped_fat <- sumCrashes(crashes, "pedflag", "totfatl")
+bike_svr <- sumCrashes(crashes, "bikeflag", "totinj")
+ped_svr <- sumCrashes(crashes, "pedflag", "totinj")
+mcyc_fat <- sumCrashes(crashes, "mcycflag", "totfatl")
+mcyc_svr <- sumCrashes(crashes, "mcycflag", "totinj")
+
+# function to calculate percent change from last year YTD to current year YTD
+pct_change_YTD <- function(flag, type){
+  scales::percent((sumCrashes(crashes, flag, type) - sumCrashes(crashes_last_year_YTD, flag, type)) / sumCrashes(crashes_last_year_YTD, flag, type))
+}
+
+# function for creating text output for YTD infoboxes, with number and percent change
+create_YTD_text <- function(flag, type){
+  HTML(paste0(sumCrashes(crashes, flag, type), br(), pct_change_YTD(flag, type)))
+}
+
+ranked <- crashes_hist_by_mo %>% 
+  filter(month == last_month) %>% 
+  pull(tot_fat_inj_mo)
+crashes_last_mo <- tail(ranked, 1)
+rank_mo <- tail(rank(-ranked), n = 1)
+#rank_mo_str <- ifelse(rank_mo == 1, "", toOrdinal(rank_mo))
+# title_month <- paste0("Fatal and serious traffic injuries in Madison in ", last_month_long, ", 2017-2022")
+# subtitle_month <- paste0("With ", 
+#                          crashes_last_mo, 
+#                          " fatalities and serious injuries, this year's ", 
+#                          last_month_long ,
+#                          " was the ",
+#                          rank_mo_str,
+#                          " worst ",
+#                          "since 2017."
+# )
+
+
+
+# chart for comparing year-to-date crashes
+## create labels
+crash_names <- c(
+  "fatl" = "Fatalities",
+  "inj" = "Serious injuries",
+  "fat_inj" = "Fatalities + serious injuries"
+)
+
+ytd_chart <- 
+  crashes_KA_hist %>% 
+  filter(yday(date) <= yday(today())) %>% #filter to crashes YTD for every year
+  group_by(year = year(date)) %>% 
+  summarize(inj = sum(totinj), fatl = sum(totfatl), fat_inj = inj + fatl) %>% 
+  pivot_longer(2:4, names_to = "variable", values_to = "value") %>% 
+  mutate(variable = reorder(variable, value)) %>% 
+  ggplot(aes(year, value, color = variable)) +
+  geom_line() +
+  geom_point() +
+  geom_text(aes(label = value), nudge_y = 6) +
+    scale_color_manual(values = c("red", "black", "blue")) +
+  facet_wrap(~ variable, labeller = as_labeller(crash_names)) +
+  labs(title = "Fatalities and serious injuries in Madison",
+       subtitle = paste0("Year to date (Jan 1 to ", 
+                      month(today(), label = T, abbr = T), " ", day(today()), ")")) +
+  ylab(element_blank()) +
+  theme_minimal() +
+  theme(panel.grid.major.y = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        legend.position = "none")
+
+
+```
+
+
 # Crashes year-to-date 
 
-To track progress in real time, it is useful to compare how the number of crashes in the current year compare with the same period in previous years.
+To track progress on achieving Vision Zero goals in real time, it is useful to compare how the number of crashes in the current year compare with the same period in previous years. Here are this year's fatalities (last update: xxx) and how they compare to the 3-year average.
 
 ## All fatalities and serious injuries {.fill}
 test
@@ -30,9 +208,60 @@ print("test")
 ## Row
 ```{r}
 #| content: valuebox
-#| title: "Spam per day"
+#| title: "All fatalities YTD"
 list(
-  icon = "trash",
+  icon = "person-x",
+  color = "dark",
+  value = 10
+)
+```
+
+```{r}
+#| content: valuebox
+#| title: "Ped fatalities YTD"
+list(
+  icon = "person-walking",
+  color = "dark",
+  value = 10
+)
+```
+
+```{r}
+#| content: valuebox
+#| title: "Bike fatalities YTD"
+list(
+  icon = "bicycle",
+  color = "dark",
+  value = 10
+)
+```
+
+## Serious injuries
+```{r}
+#| content: valuebox
+#| title: "All serious injuries YTD"
+list(
+  icon = "person-x",
+  color = "danger",
+  value = 10
+)
+```
+
+```{r}
+#| content: valuebox
+#| title: "Ped serious injuries YTD"
+list(
+  icon = "person-walking",
+  color = "danger",
+  value = 10
+)
+```
+
+```{r}
+#| content: valuebox
+#| title: "Serious injuries YTD"
+list(
+  icon = "bicycle",
   color = "danger",
   value = 10
 )
