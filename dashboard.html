@@ -6,9 +6,9 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="Cobblepot Analytics">
+<meta name="author" content="Madison, WI">
 
-<title>Palmer Penguins</title>
+<title>Vision Zero Dashboard</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -59,9 +59,9 @@ ul.task-list li input[type="checkbox"] {
     <div class="navbar-brand-container">       
 
       <div class="navbar-title">
-        <div class="navbar-title-text"><a href="#">Palmer Penguins</a></div>
+        <div class="navbar-title-text"><a href="#">Vision Zero Dashboard</a></div>
         
-        <div class="navbar-author">Cobblepot Analytics</div>
+        <div class="navbar-author">Madison, WI</div>
       </div>
     </div>
 <div id="dashboard-collapse" class="navbar-collapse collapse"><ul class="navbar-nav navbar-nav-scroll me-auto" role="tablist"><li class="nav-item" role="presentation"><a id="tab-crashes-year-to-date" class="nav-link active" data-bs-toggle="tab" role="tab" data-bs-target="#crashes-year-to-date" data-scrolling="false" href="#crashes-year-to-date" aria-controls="crashes-year-to-date" aria-selected="true"><span class="nav-link-text">Crashes year-to-date</span></a></li><li class="nav-item" role="presentation"><a id="tab-bike-crashes-1" class="nav-link" data-bs-toggle="tab" role="tab" data-bs-target="#bike-crashes-1" data-scrolling="false" href="#bike-crashes-1" aria-controls="bike-crashes-1" aria-selected="false"><span class="nav-link-text">Bike crashes</span></a></li><li class="nav-item" role="presentation"><a id="tab-ped-crashes" class="nav-link" data-bs-toggle="tab" role="tab" data-bs-target="#ped-crashes" data-scrolling="false" href="#ped-crashes" aria-controls="ped-crashes" aria-selected="false"><span class="nav-link-text">Ped crashes</span></a></li><li class="nav-item" role="presentation"><a id="tab-impairment" class="nav-link" data-bs-toggle="tab" role="tab" data-bs-target="#impairment" data-scrolling="false" href="#impairment" aria-controls="impairment" aria-selected="false"><span class="nav-link-text">Impairment</span></a></li><li class="nav-item" role="presentation"><a id="tab-all-crashes" class="nav-link" data-bs-toggle="tab" role="tab" data-bs-target="#all-crashes" data-scrolling="false" href="#all-crashes" aria-controls="all-crashes" aria-selected="false"><span class="nav-link-text">All crashes</span></a></li><li class="nav-item" role="presentation"><a id="tab-data-notesfaq" class="nav-link" data-bs-toggle="tab" role="tab" data-bs-target="#data-notesfaq" data-scrolling="false" href="#data-notesfaq" aria-controls="data-notesfaq" aria-selected="false"><span class="nav-link-text">Data notes/FAQ</span></a></li></ul></div></div>
@@ -71,10 +71,11 @@ ul.task-list li input[type="checkbox"] {
 
 <div class="bslib-grid-item html-fill-item tab-content bslib-grid" data-layout="fill" style="display: grid; grid-template-rows: minmax(3em, 1fr); grid-auto-columns: minmax(0, 1fr);">
 <div id="crashes-year-to-date" class="dashboard-page tab-pane show active html-fill-item html-fill-container" data-orientation="rows" aria-labelledby="tab-crashes-year-to-date">
-<div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-rows: minmax(3em, max-content) minmax(3em, max-content) minmax(3em, 1fr) minmax(3em, max-content); grid-auto-columns: minmax(0, 1fr);">
+<div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-rows: minmax(3em, max-content) minmax(3em, max-content) minmax(3em, 1fr) minmax(3em, max-content) minmax(3em, max-content); grid-auto-columns: minmax(0, 1fr);">
 <div class="card html-fill-item html-fill-container bslib-card" data-fill="false" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
 <div class="card-body html-fill-item html-fill-container">
-<p>To track progress in real time, it is useful to compare how the number of crashes in the current year compare with the same period in previous years.</p>
+<p>To track progress on achieving Vision Zero goals in real time, it is useful to compare how the number of crashes in the current year with the same period in previous years. Here are this year’s fatalities and serious injuries compared to the 3-year year-to-date average.</p>
+<p>Last update: 2024-01-27 19:26:42</p>
 </div>
 <bslib-tooltip placement="auto" bsoptions="[]" data-require-bs-version="5" data-require-bs-caller="tooltip()">
     <template>Expand</template>
@@ -115,20 +116,104 @@ test
         <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" style="height:1em;width:1em;" aria-hidden="true" role="img"><path d="M20 5C20 4.4 19.6 4 19 4H13C12.4 4 12 3.6 12 3C12 2.4 12.4 2 13 2H21C21.6 2 22 2.4 22 3V11C22 11.6 21.6 12 21 12C20.4 12 20 11.6 20 11V5ZM4 19C4 19.6 4.4 20 5 20H11C11.6 20 12 20.4 12 21C12 21.6 11.6 22 11 22H3C2.4 22 2 21.6 2 21V13C2 12.4 2.4 12 3 12C3.6 12 4 12.4 4 13V19Z"></path></svg>
     </span>
 </bslib-tooltip><script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div>
-<div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-columns: minmax(3em, 1fr);
+<div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-columns: minmax(3em, 1fr) minmax(3em, 1fr) minmax(3em, 1fr);
+grid-auto-rows: minmax(0, 1fr);">
+<div class="card valuebox cell html-fill-item html-fill-container bslib-card bslib-value-box bg-dark showcase-left-center" data-bslib-card-init="" data-require-bs-caller="card()">
+<div class="card-body html-fill-item html-fill-container">
+<div data-icon="person-x" class="html-fill-item html-fill-container value-box-grid">
+<div class="value-box-showcase html-fill-item html-fill-container">
+
+<i class="bi bi-person-x"></i></div>
+<div class="value-box-area">
+<p class="value-box-title">
+All fatalities YTD
+</p>
+<p class="value-box-value">
+0 (-100%)
+</p>
+</div>
+</div>
+</div>
+<script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div><div class="card valuebox cell html-fill-item html-fill-container bslib-card bslib-value-box bg-dark showcase-left-center" data-bslib-card-init="" data-require-bs-caller="card()">
+<div class="card-body html-fill-item html-fill-container">
+<div data-icon="person-walking" class="html-fill-item html-fill-container value-box-grid">
+<div class="value-box-showcase html-fill-item html-fill-container">
+
+<i class="bi bi-person-walking"></i></div>
+<div class="value-box-area">
+<p class="value-box-title">
+Ped fatalities YTD
+</p>
+<p class="value-box-value">
+0 (NA)
+</p>
+</div>
+</div>
+</div>
+<script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div><div class="card valuebox cell html-fill-item html-fill-container bslib-card bslib-value-box bg-dark showcase-left-center" data-bslib-card-init="" data-require-bs-caller="card()">
+<div class="card-body html-fill-item html-fill-container">
+<div data-icon="bicycle" class="html-fill-item html-fill-container value-box-grid">
+<div class="value-box-showcase html-fill-item html-fill-container">
+
+<i class="bi bi-bicycle"></i></div>
+<div class="value-box-area">
+<p class="value-box-title">
+Bike fatalities YTD
+</p>
+<p class="value-box-value">
+0 (NA)
+</p>
+</div>
+</div>
+</div>
+<script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div>
+</div>
+<div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-columns: minmax(3em, 1fr) minmax(3em, 1fr) minmax(3em, 1fr);
 grid-auto-rows: minmax(0, 1fr);">
 <div class="card valuebox cell html-fill-item html-fill-container bslib-card bslib-value-box bg-danger showcase-left-center" data-bslib-card-init="" data-require-bs-caller="card()">
 <div class="card-body html-fill-item html-fill-container">
-<div data-icon="trash" class="html-fill-item html-fill-container value-box-grid">
+<div data-icon="person-x" class="html-fill-item html-fill-container value-box-grid">
 <div class="value-box-showcase html-fill-item html-fill-container">
 
-<i class="bi bi-trash"></i></div>
+<i class="bi bi-person-x"></i></div>
 <div class="value-box-area">
 <p class="value-box-title">
-Spam per day
+All serious injuries YTD
 </p>
 <p class="value-box-value">
-10
+5 (-17%)
+</p>
+</div>
+</div>
+</div>
+<script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div><div class="card valuebox cell html-fill-item html-fill-container bslib-card bslib-value-box bg-danger showcase-left-center" data-bslib-card-init="" data-require-bs-caller="card()">
+<div class="card-body html-fill-item html-fill-container">
+<div data-icon="person-walking" class="html-fill-item html-fill-container value-box-grid">
+<div class="value-box-showcase html-fill-item html-fill-container">
+
+<i class="bi bi-person-walking"></i></div>
+<div class="value-box-area">
+<p class="value-box-title">
+Ped serious injuries YTD
+</p>
+<p class="value-box-value">
+0 (NA)
+</p>
+</div>
+</div>
+</div>
+<script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div><div class="card valuebox cell html-fill-item html-fill-container bslib-card bslib-value-box bg-danger showcase-left-center" data-bslib-card-init="" data-require-bs-caller="card()">
+<div class="card-body html-fill-item html-fill-container">
+<div data-icon="bicycle" class="html-fill-item html-fill-container value-box-grid">
+<div class="value-box-showcase html-fill-item html-fill-container">
+
+<i class="bi bi-bicycle"></i></div>
+<div class="value-box-area">
+<p class="value-box-title">
+Serious injuries YTD
+</p>
+<p class="value-box-value">
+0 (NA)
 </p>
 </div>
 </div>

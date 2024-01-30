@@ -1,24 +1,35 @@
 ---
-title: "Palmer Penguins"
-author: "Cobblepot Analytics"
-format: dashboard
+title: "Vision Zero Dashboard"
+author: "Madison, WI"
+format: 
+  dashboard:
+    theme: materia
 ---
 
 ```{R load-libraries}
+#| warning: false
+#| echo: false
 library(pins)
 library(tidyverse)
 library(gghighlight)
 library(toOrdinal)
 library(tmap)
 library(sf)
+library(htmltools)
 # library(DT)
 ```
+
 ```{R process-data}
+#| warning: false
+#| echo: false
+#| output: false
 theme_set(theme_minimal())
 board <- pins::board_s3("vzpins", 
                access_key = Sys.getenv("VZPINS_S3_PUBLIC"), 
                secret_access_key = Sys.getenv("VZPINS_S3_SECRET"),
                region = "us-east-1")
+# retrieve last updated date for crashes
+last_updated <- pin_versions(board, name = "crashes_all_dane")[1,] |> pull(created)
 
 
 crashes_all_dane <- pin_read(board = board, name = "crashes_all_dane")
@@ -36,9 +47,15 @@ madison <- st_read("data/City_Limit.geojson") %>%
 # set up time intervals
 d <- today()
 
-# last year YTD for comparison
-last_year_YTD <- interval(start = floor_date(today() - years(1), unit = "year"),
-                          end = today() - years(1))
+# previous years YTD for comparison
+last_year_YTD <- interval(start = floor_date(last_updated - years(1), unit = "year"),
+                          end = last_updated - years(1))
+two_year_YTD <- interval(start = floor_date(last_updated - years(2), unit = "year"),
+                          end = last_updated - years(2))
+three_year_YTD <- interval(start = floor_date(last_updated - years(3), unit = "year"),
+                          end = last_updated - years(3))
+
+
 
 
 
@@ -65,6 +82,11 @@ crashes <- crashes_KA_hist |>
 
 crashes_last_year_YTD <- crashes_KA_hist %>% 
   filter(date %within% last_year_YTD)
+
+crashes_previous_years_YTD <- crashes_KA_hist %>% 
+  filter(date %within% last_year_YTD |
+           date %within% two_year_YTD |
+           date %within% three_year_YTD)
 
 last_month <- month(floor_date(d, unit = "month") -1, label = T, abbr = T)
 last_month_long <- month(floor_date(d, unit = "month") -1, label = T, abbr = F)
@@ -110,6 +132,21 @@ sumCrashes <- function(df, flag, type){
   
 }
 
+sum_crashes <- function(df, flag, type){
+  if(flag == "all")
+     {
+          df %>% 
+            summarise(sum({{ type }})) %>% 
+            pull()
+
+  } else
+          df %>% 
+            filter({{ flag }} == "Y") %>% 
+            summarise(sum({{ type }})) %>% 
+            pull()
+  
+}
+
 
 bike_fat <- sumCrashes(crashes, "bikeflag", "totfatl")
 ped_fat <- sumCrashes(crashes, "pedflag", "totfatl")
@@ -118,14 +155,17 @@ ped_svr <- sumCrashes(crashes, "pedflag", "totinj")
 mcyc_fat <- sumCrashes(crashes, "mcycflag", "totfatl")
 mcyc_svr <- sumCrashes(crashes, "mcycflag", "totinj")
 
-# function to calculate percent change from last year YTD to current year YTD
+# function to calculate percent change from last three years YTD to current year YTD
 pct_change_YTD <- function(flag, type){
-  scales::percent((sumCrashes(crashes, flag, type) - sumCrashes(crashes_last_year_YTD, flag, type)) / sumCrashes(crashes_last_year_YTD, flag, type))
+  scales::percent((sum_crashes(crashes, flag, {{ type }}) - (sum_crashes(crashes_previous_years_YTD, flag, {{ type }})/3)) / (sum_crashes(crashes_previous_years_YTD, flag, {{ type }})/3))
 }
 
 # function for creating text output for YTD infoboxes, with number and percent change
+# create_YTD_text <- function(flag, type){
+#   HTML(paste0(sumCrashes(crashes, flag, type), br(), pct_change_YTD(flag, type)))
+# }
 create_YTD_text <- function(flag, type){
-  HTML(paste0(sumCrashes(crashes, flag, type), br(), pct_change_YTD(flag, type)))
+  paste0(sum_crashes(crashes, flag, {{ type }})," (", pct_change_YTD(flag, {{type }}), ")")
 }
 
 ranked <- crashes_hist_by_mo %>% 
@@ -181,17 +221,20 @@ ytd_chart <-
 
 ```
 
+# Crashes year-to-date
 
-# Crashes year-to-date 
+To track progress on achieving Vision Zero goals in real time, it is useful to compare how the number of crashes in the current year with the same period in previous years.
+Here are this year's fatalities and serious injuries compared to the 3-year year-to-date average.
 
-To track progress on achieving Vision Zero goals in real time, it is useful to compare how the number of crashes in the current year compare with the same period in previous years. Here are this year's fatalities (last update: xxx) and how they compare to the 3-year average.
+Last update: `{r} last_updated` 
 
 ## All fatalities and serious injuries {.fill}
+
 test
+
 ```{R}
 
 ```
-
 
 ## Bike crashes {.tabset}
 
@@ -206,13 +249,14 @@ print("test")
 ```
 
 ## Row
+
 ```{r}
 #| content: valuebox
 #| title: "All fatalities YTD"
 list(
   icon = "person-x",
   color = "dark",
-  value = 10
+  value = create_YTD_text("all", totfatl)
 )
 ```
 
@@ -222,7 +266,7 @@ list(
 list(
   icon = "person-walking",
   color = "dark",
-  value = 10
+  value = create_YTD_text("pedflag", totfatl)
 )
 ```
 
@@ -232,18 +276,19 @@ list(
 list(
   icon = "bicycle",
   color = "dark",
-  value = 10
+  value = create_YTD_text("bikeflag", totfatl)
 )
 ```
 
 ## Serious injuries
+
 ```{r}
 #| content: valuebox
 #| title: "All serious injuries YTD"
 list(
   icon = "person-x",
   color = "danger",
-  value = 10
+  value = create_YTD_text("all", totinj)
 )
 ```
 
@@ -253,7 +298,7 @@ list(
 list(
   icon = "person-walking",
   color = "danger",
-  value = 10
+  value = create_YTD_text("pedflag", totinj)
 )
 ```
 
@@ -263,9 +308,10 @@ list(
 list(
   icon = "bicycle",
   color = "danger",
-  value = 10
+  value = create_YTD_text("bikeflag", totinj)
 )
 ```
+
 # Bike crashes
 
 # Ped crashes
